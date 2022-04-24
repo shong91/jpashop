@@ -17,13 +17,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "orders")
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
 
   @Id
@@ -35,6 +38,9 @@ public class Order {
   @JoinColumn(name = "member_id")
   private Member member;
 
+  // cascade 의 범위는 어느정도일 때 해야할까?
+  // 엔티티에 대한 private owner 일 때, 즉 persist 할 lifecycle 이 완전히 동일할 때만 사용할 것.
+  // 다른 엔티티에서도 해당 엔티티를 참조할 때에는 영향도가 크기 때문에 각각 영속성을 부여하는 것이 나음 !!
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
   private List<OrderItem> orderItems = new ArrayList<>();
 
