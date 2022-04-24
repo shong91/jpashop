@@ -1,7 +1,5 @@
 package jpabook.jpashop.domain.item;
 
-import static javax.persistence.InheritanceType.SINGLE_TABLE;
-
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
@@ -21,6 +19,7 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "dtype")
 @Getter
+@Setter
 public abstract class Item {
 
   @Id
