@@ -71,15 +71,18 @@ public class ItemController {
 
     // 업데이트 전, 로그인한 유저가 해당 객체에 대한 업데이트 권한이 있는지 체크하는 로직 필요.
 
-    Book book = new Book();
-    book.setId(form.getId());
-    book.setName(form.getName());
-    book.setPrice(form.getPrice());
-    book.setStockQuantity(form.getStockQuantity());
-    book.setAuthor(form.getAuthor());
-    book.setIsbn(form.getIsbn());
+    // 컨트롤러에서 어설프게 엔티티를 생성하지 말고, 서비스 계층에 명확하게 파라미터를 전달하자.
+//    Book book = new Book();
+//    book.setId(form.getId());
+//    book.setName(form.getName());
+//    book.setPrice(form.getPrice());
+//    book.setStockQuantity(form.getStockQuantity());
+//    book.setAuthor(form.getAuthor());
+//    book.setIsbn(form.getIsbn());
+//
+//    itemService.saveItem(book);
 
-    itemService.saveItem(book);
+    itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());
     return "redirect:items";
   }
 }

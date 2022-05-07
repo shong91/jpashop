@@ -20,6 +20,15 @@ public class ItemService {
     itemRepository.save(item);
   }
 
+  @Transactional
+  public Item updateItem(Long itemId, String name, int price, int stockQuantity) {
+    // findItem 은 영속성 컨텍스트에서 가져온 객체이므로, 값이 변경되면 변경 감지를 통해 자동 update
+    Item findItem = itemRepository.findOne(itemId);
+    findItem.change(name, price, stockQuantity);
+
+    return findItem;
+  }
+
   public List<Item> findItems() {
     return itemRepository.findAll();
   }
