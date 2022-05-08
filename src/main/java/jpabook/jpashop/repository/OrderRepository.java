@@ -115,4 +115,12 @@ public class OrderRepository {
     return query.getResultList();
   }
 
+  public List<Order> findAllWithMemberDelivery() {
+    // 기술적으로는 sql 의 join 과 동일.
+    // order 조회 시 member, delivery 의 데이터도 한 번에 가져오도록 함
+    return em.createQuery(
+        "select o from Order o" + "join fetch o.member m" + "join fetch o.delivery d",
+        Order.class).getResultList();
+  }
+
 }

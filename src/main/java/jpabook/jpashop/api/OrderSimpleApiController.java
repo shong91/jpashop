@@ -69,6 +69,20 @@ public class OrderSimpleApiController {
     return result;
   }
 
+  @GetMapping("/api/v3/simple-orders")
+  public List<SimpleOrderDto> orderV3() {
+    // V3: 엔티티를 DTO 로 변환 - fetch join 최적화
+
+    // fetch join 으로 order 조회 시 member, delivery 의 데이터를 한 번에 가져옴 (모든 필드 조회)
+    // => 지연로딩 자체가 일어나지 않음.
+    // V4 대비 DB -> 애플리케이션 네트워킹이 많이 일어나나, 재사용성 높음
+
+    List<Order> orders = orderRepository.findAllWithMemberDelivery();
+    return orders.stream().map(SimpleOrderDto::new)
+        .collect(Collectors.toList());
+
+  }
+
   @Data
   static class SimpleOrderDto {
 
