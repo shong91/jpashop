@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -49,7 +50,26 @@ public class OrderApiController {
   @GetMapping("/api/v3/orders")
   public List<OrderDto> ordersV3() {
     // V3: 엔티티를 DTO 로 변환 - fetch join 최적화
+    // 네트워킹은 1번만에 모든 데이터를 가져올 수 있으나, 데이터 중복 발생 가능성
+    // 페이징 불가
+
     List<Order> orders = orderRepository.findAllWithItem();
+    List<OrderDto> result = orders.stream().map(o -> new OrderDto(o)).collect(Collectors.toList());
+    return result;
+  }
+
+  @GetMapping("/api/v3.1/orders")
+  public List<OrderDto> ordersV3_page(
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "100") int limit) {
+    // V3.1: 엔티티를 DTO 로 변환 - 페이징 한계 돌파
+    // v3 대비 네트워킹은 더 일어나나, 정규화된 상태의 데이터를 조회할 수 있다.
+    // 페이징 가능
+
+    // 1. *ToOne 관계는 모두 fetch join
+    List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
+
+    // 2. *ToMany 관계(컬렉션) 은 지연 로딩으로 조회한다. (hibernate.default_batch_fetch_size 사용)
     List<OrderDto> result = orders.stream().map(o -> new OrderDto(o)).collect(Collectors.toList());
     return result;
   }

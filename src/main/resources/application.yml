@@ -12,6 +12,7 @@ spring:
       hibernate:
         #        show_sql: true                  # sout 으로 로그 찍기
         format_sql: true
+        default_batch_fetch_size: 100       # 컬렉션/프록시 객체를 설정한 size 만큼 IN 쿼리로 조회
 
 logging:
   level:
