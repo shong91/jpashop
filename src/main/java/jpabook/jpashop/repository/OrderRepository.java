@@ -116,11 +116,30 @@ public class OrderRepository {
   }
 
   public List<Order> findAllWithMemberDelivery() {
-    // 기술적으로는 sql 의 join 과 동일.
+    // 기술적으로는 sql 의 inner join 과 동일.
     // order 조회 시 member, delivery 의 데이터도 한 번에 가져오도록 함
     return em.createQuery(
         "select o from Order o" + "join fetch o.member m" + "join fetch o.delivery d",
         Order.class).getResultList();
   }
 
+  public List<Order> findAllWithItem() {
+    // 1대다 조인에서 데이터베이스 row 수가 증가하게 되어, 결과값(id값) 은 갗ㅌ은 order 엔티티의 조회 수도 증가하게 된다.
+    // JPA 의 distinct 는 SQL 의 distinct 키워드를 추가하고,
+    // 같은 엔티티가 조회되면, 애플리케이션에서 중복을 걸러주는 역할을 하여 컬렉션 fetch join 의 중복 조회를 막아준다.
+
+    // [Collection fetch join 의 단점]
+    // 1. 1대다 관계의 엔티티를 fetch join 할 시 페이징이 불가능하다 !!!
+    // (애플리케이션 단으로 DB 데이터를 모두 올린 다음, 메모리에서 페이징 처리 => out of memory issue 발생)
+
+    // 2. 컬렉션 페치 조인은 1개만 사용할 수 있다 !!!
+    // 컬렉션 둘 이상에 페치 조인을 사용할 경우(1*N*M?), 데이터가 부정합하게 조회될 수 있다.
+
+    return em.createQuery("select distinct o from Order o " +
+            "join fetch o.member m " +
+            "join fetch o.delivery d " +
+            "join fetch o.orderItems oi " +
+            "join fetch oi.item i ", Order.class)
+        .getResultList();
+  }
 }
