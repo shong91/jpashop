@@ -1,6 +1,8 @@
 package jpabook.jpashop.repository.order.query;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -24,6 +26,20 @@ public class OrderQueryRepository {
     return result;
   }
 
+  public List<OrderQueryDto> findAllByDto_optimization() {
+    // root query 1번
+    List<OrderQueryDto> result = findOrders();
+    // collection query 1번
+    List<Long> orderIds = toOrderIds(result);
+    Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap(
+        orderIds);
+
+    // 메모리에서 값 매핑 (O(1) 으로 성능 최적화)
+    result.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
+
+    return result;
+  }
+
   private List<OrderItemQueryDto> findOrderItems(Long orderId) {
     return em.createQuery(
         "select new jpabook.jpashop.repository.order.query.OrderQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)"
@@ -40,4 +56,24 @@ public class OrderQueryRepository {
             + " from Order o " + "join o.member m " + "join o.delivery d ",
         OrderQueryDto.class).getResultList();
   }
+
+  private List<Long> toOrderIds(List<OrderQueryDto> result) {
+    List<Long> orderIds = result.stream().map(o -> o.getOrderId()).collect(Collectors.toList());
+    return orderIds;
+  }
+
+  private Map<Long, List<OrderItemQueryDto>> findOrderItemMap(List<Long> orderIds) {
+    // collection query 1번
+    List<OrderItemQueryDto> orderItems = em.createQuery(
+        "select new jpabook.jpashop.repository.order.query.OrderQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)"
+            + "from OrderItem oi "
+            + "join oi.item i "
+            + "where oi.order.id in :orderIds ", OrderItemQueryDto.class)
+        .setParameter("orderIds", orderIds).getResultList();
+
+    Map<Long, List<OrderItemQueryDto>> orderItemMap = orderItems.stream()
+        .collect(Collectors.groupingBy(OrderItemQueryDto::getOrderId));
+    return orderItemMap;
+  }
+
 }
