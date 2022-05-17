@@ -40,6 +40,17 @@ public class OrderQueryRepository {
     return result;
   }
 
+  public List<OrderFlatDto> findAllByDto_flat() {
+    // query 1번
+    return em.createQuery("select new "
+        + "jpabook.jpashop.repository.order.query.OrderFlatDto(o.id, m.name, o.orderDate, o.status, d.address, i.name, oi.orderPrice, oi.count) "
+        + "from Order o "
+        + "join o.member m "
+        + "join o.delivery d "
+        + "join o.orderItems oi "
+        + "join oi.item i ", OrderFlatDto.class).getResultList();
+  }
+
   private List<OrderItemQueryDto> findOrderItems(Long orderId) {
     return em.createQuery(
         "select new jpabook.jpashop.repository.order.query.OrderQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)"
@@ -63,7 +74,6 @@ public class OrderQueryRepository {
   }
 
   private Map<Long, List<OrderItemQueryDto>> findOrderItemMap(List<Long> orderIds) {
-    // collection query 1번
     List<OrderItemQueryDto> orderItems = em.createQuery(
         "select new jpabook.jpashop.repository.order.query.OrderQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)"
             + "from OrderItem oi "
@@ -76,14 +86,4 @@ public class OrderQueryRepository {
     return orderItemMap;
   }
 
-  public List<OrderFlatDto> findAllByDto_flat() {
-    // 쿼리 1번
-    return em.createQuery("select new "
-        + "jpabook.jpashop.repository.order.query.OrderFlatDto(o.id, m.name, o.orderDate, o.status, d.address, i.name, oi.orderPrice, oi.count) "
-        + "from Order o "
-        + "join o.member m "
-        + "join o.delivery d "
-        + "join o.orderItems oi "
-        + "join oi.item i ", OrderFlatDto.class).getResultList();
-  }
 }

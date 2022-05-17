@@ -84,11 +84,14 @@ public class OrderApiController {
 
   @GetMapping("/api/v4/orders")
   public List<OrderQueryDto> ordersV4() {
+    // V4: JPA에서 DTO 직접 조회
+    // N+1 의 문제 발생
     return orderQueryRepository.findOrderQueryDtos();
   }
 
   @GetMapping("/api/v5/orders")
   public List<OrderQueryDto> ordersV5() {
+    // V5: JPA에서 DTO 직접 조회 - 컬렉션 조회 최적화
     return orderQueryRepository.findAllByDto_optimization();
   }
 
