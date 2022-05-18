@@ -1,36 +1,12 @@
 package jpabook.jpashop.repository;
 
 import java.util.List;
-import javax.persistence.EntityManager;
 import jpabook.jpashop.domain.Member;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Repository
-@RequiredArgsConstructor
-public class MemberRepository {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
-  // @PersistenceContext 사용. @Autowired 를 사용해도 동일하게 동작함 (Spring 지원)
-  // @PersistenceUnits() 으로 entityManagerFactory 를 설정할 수도 있다.
-  private final EntityManager em;
-
-
-  public void save(Member member) {
-    em.persist(member);
-  }
-
-  public Member findOne(Long id) {
-    // 영속성 컨텍스트에 엔티티가 올라가는데, PK 를 키로 영속성 컨텍스트에 값을 저장한다.
-    return em.find(Member.class, id);
-  }
-
-  public List<Member> findAll() {
-    // JPQL: entity 에 대한 쿼링
-    return em.createQuery("select m from Member m", Member.class).getResultList();
-  }
-
-  public List<Member> findByName(String name) {
-    return em.createQuery("select m from Member m where m.name = :name", Member.class)
-        .setParameter("name", name).getResultList();
-  }
+  // 별도 구현체를 생성하지 않아도, JPA 가 구현체를 애플리케이션 실행시점에 주입해준다.
+  // findBy + field 명의 메서드명을 기반으로 [ select m from Member m where m.name = ? ] 이라는 jpql 을 생성하여 쿼리한다.
+  List<Member> findByName(String name);
 }
