@@ -10,6 +10,7 @@ import jpabook.jpashop.repository.ItemRepository;
 import jpabook.jpashop.repository.MemberRepository;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.order.query.OrderQuerydslRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
   private final OrderRepository orderRepository;
+  private final OrderQuerydslRepository orderQuerydslRepository;
   private final MemberRepository memberRepository;
   private final ItemRepository itemRepository;
 
@@ -54,7 +56,7 @@ public class OrderService {
   @Transactional
   public void cancelOrder(Long orderId) {
     // 주문 엔티티 조회
-    Order order = orderRepository.findOne(orderId);
+    Order order = orderRepository.findById(orderId).get();
 
     // 주문 취소
     // 엔티티가 변경되면, JPA 가 자동으로 변경 내역 감지(dirty checking) 하여 업데이트 쿼리 실행
@@ -65,6 +67,6 @@ public class OrderService {
    * 검색
    */
   public List<Order> findOrders(OrderSearch orderSearch) {
-    return orderRepository.findAll(orderSearch);
+    return orderQuerydslRepository.findAll(orderSearch);
   }
 }

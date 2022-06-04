@@ -10,12 +10,12 @@ import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderItem;
 import jpabook.jpashop.domain.OrderStatus;
-import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
 import jpabook.jpashop.repository.order.query.OrderFlatDto;
 import jpabook.jpashop.repository.order.query.OrderItemQueryDto;
 import jpabook.jpashop.repository.order.query.OrderQueryDto;
 import jpabook.jpashop.repository.order.query.OrderQueryRepository;
+import jpabook.jpashop.repository.order.query.OrderQuerydslRepository;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class OrderApiController {
 
-  private final OrderRepository orderRepository;
   private final OrderQueryRepository orderQueryRepository;
+  private final OrderQuerydslRepository orderQuerydslRepository;
 
   @GetMapping("/api/v1/orders")
   public List<Order> ordersV1() {
     // V1. 엔티티 직접 노출 (비권장)
-    List<Order> all = orderRepository.findAllByString(new OrderSearch());
+    List<Order> all = orderQuerydslRepository.findAll(new OrderSearch());
 
     // LAZY 강제 초기화
     for (Order order : all) {
@@ -50,7 +50,7 @@ public class OrderApiController {
   public List<OrderDto> ordersV2() {
     // V2: 엔티티를 DTO 로 변환
 
-    List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+    List<Order> orders = orderQuerydslRepository.findAll(new OrderSearch());
     List<OrderDto> result = orders.stream().map(o -> new OrderDto(o)).collect(Collectors.toList());
     return result;
   }
@@ -61,7 +61,7 @@ public class OrderApiController {
     // 네트워킹은 1번만에 모든 데이터를 가져올 수 있으나, 데이터 중복 발생 가능성
     // 페이징 불가
 
-    List<Order> orders = orderRepository.findAllWithItem();
+    List<Order> orders = orderQuerydslRepository.findAllWithItem();
     List<OrderDto> result = orders.stream().map(o -> new OrderDto(o)).collect(Collectors.toList());
     return result;
   }
@@ -75,7 +75,7 @@ public class OrderApiController {
     // 페이징 가능
 
     // 1. *ToOne 관계는 모두 fetch join
-    List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
+    List<Order> orders = orderQuerydslRepository.findAllWithMemberDelivery(offset, limit);
 
     // 2. *ToMany 관계(컬렉션) 은 지연 로딩으로 조회한다. (hibernate.default_batch_fetch_size 사용)
     List<OrderDto> result = orders.stream().map(o -> new OrderDto(o)).collect(Collectors.toList());

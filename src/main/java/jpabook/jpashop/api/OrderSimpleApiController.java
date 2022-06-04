@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
-import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.order.query.OrderQuerydslRepository;
 import jpabook.jpashop.repository.order.simplequery.OrderSimpleQueryDto;
 import jpabook.jpashop.repository.order.simplequery.OrderSimpleQueryRepository;
 import lombok.Data;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class OrderSimpleApiController {
 
-  private final OrderRepository orderRepository;
+  private final OrderQuerydslRepository orderQuerydslRepository;
 
   private final OrderSimpleQueryRepository orderSimpleQueryRepository;
 
@@ -54,7 +54,7 @@ public class OrderSimpleApiController {
     // or 아래 코드처럼 LAZY 강제 초기화 필요
     // 문제 3. API spec 상 필요 없는 정보까지 노출하게 됨.
 
-    List<Order> all = orderRepository.findAllByString(new OrderSearch());
+    List<Order> all = orderQuerydslRepository.findAll(new OrderSearch());
     for (Order order : all) {
       order.getMember().getName(); // LAZY 강제 초기화 -> member query 를 날려 값을 가져오게 됨
       order.getDelivery().getAddress();
@@ -74,7 +74,7 @@ public class OrderSimpleApiController {
     // (1(오더) + 1(오더1의 회원) + 1(오더1의 배송) +1(오더2의 회원) + 1(오더2의 배송))
     // 왜 "최악의 경우"?: 지연 로딩은 영속성 컨텍스트에서 조회하므로, 이미 조회된 경우 쿼리를 생략한다.
 
-    List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+    List<Order> orders = orderQuerydslRepository.findAll(new OrderSearch());
     List<SimpleOrderDto> result = orders.stream().map(SimpleOrderDto::new)
         .collect(Collectors.toList());
 
@@ -89,7 +89,7 @@ public class OrderSimpleApiController {
     // => 지연로딩 자체가 일어나지 않음.
     // V4 대비 DB -> 애플리케이션 네트워킹이 많이 일어나나, 재사용성 높음
 
-    List<Order> orders = orderRepository.findAllWithMemberDelivery();
+    List<Order> orders = orderQuerydslRepository.findAllWithMemberDelivery(0, 100);
     return orders.stream().map(SimpleOrderDto::new)
         .collect(Collectors.toList());
 
