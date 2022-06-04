@@ -4,6 +4,8 @@ import java.util.List;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,10 @@ public class MemberService {
   // readOnly = true 설정하여 조회 기능 최적화
   public List<Member> findMembers() {
     return memberRepository.findAll();
+  }
+
+  public Page<Member> findMembers_paging(PageRequest pageRequest) {
+    return memberRepository.findAll(pageRequest);
   }
 
   public Member findOne(Long memberId) {

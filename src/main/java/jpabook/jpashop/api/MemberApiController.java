@@ -8,15 +8,20 @@ import jpabook.jpashop.service.MemberService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class MemberApiController {
 
   private final MemberService memberService;
@@ -38,6 +43,17 @@ public class MemberApiController {
     List<MemberDto> collect = findMembers.stream().map(m -> new MemberDto(m.getName()))
         .collect(Collectors.toList());
     return new Result(collect.size(), collect);
+  }
+
+  @GetMapping("/api/v2.1/members")
+  public Result memberV2_page(
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "100") int limit) {
+    PageRequest pageRequest = PageRequest.of(offset, limit);
+    Page<Member> findMembers = memberService.findMembers_paging(pageRequest);
+    Page<MemberDto> map = findMembers.map(m -> new MemberDto(m.getName()));
+
+    return new Result(map.getTotalPages(), map);
   }
 
   @Data
